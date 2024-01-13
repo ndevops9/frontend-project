@@ -1,0 +1,80 @@
+name: GCP CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+
+      - name: Build code
+        run: |
+          # Add your build commands here
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: gcr.io/weighty-tensor-407619/myapp:latest
+
+  deploy:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+
+      - name: Terraform apply
+        run: |
+          terraform init
+          terraform apply -auto-approve
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: 4f8300994f1bc032fc0fa581b594c561fbb5ebf0
+
+      - name: Deploy to GKE
+        run: |
+          # Add your deployment commands here
+
+  test:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Run UI tests
+        run: |
+          # Add your UI testing commands here
+
+  cleanup:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+
+      - name: Terraform destroy
+        run: |
+          terraform init
+          terraform destroy -auto-approve
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}
